@@ -1,0 +1,65 @@
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://www.springframework.org/schema/beans" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+     http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+     http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd  ">
+
+	<tx:annotation-driven transaction-manager="jdbcTransactionManager" />
+
+	<bean id="masterDataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="driverClassName" value="org.postgresql.Driver" />
+		<property name="url" value="jdbc:postgresql://localhost:5432/postgres" />
+		<property name="username" value="maycuruser" />
+		<property name="password" value="Java01!!" />
+	</bean>
+
+	<bean id="slaveDataSource" class="com.alibaba.druid.pool.DruidDataSource"
+		init-method="init" destroy-method="close">
+		<property name="driverClassName" value="org.postgresql.Driver" />
+		<property name="url" value="jdbc:postgresql://localhost:5432/yaoyufan" />
+		<property name="username" value="maycuruser" />
+		<property name="password" value="Java01!!" />
+	</bean>
+
+	<bean id="dataSource" class="com.johnny.test.component.DynamicDataSource">
+		<property name="targetDataSources">
+			<map key-type="java.lang.String">
+				<!-- write -->
+				<entry key="master" value-ref="masterDataSource" />
+				<!-- read -->
+				<entry key="slave" value-ref="slaveDataSource" />
+			</map>
+
+		</property>
+		<property name="defaultTargetDataSource" ref="masterDataSource" />
+	</bean>
+
+	<bean id="jdbcTransactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<!-- define the SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="typeAliasesPackage" value="com.johnny.test.domain" />
+	</bean>
+
+	<!-- scan for mappers and let them be autowired -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.johnny.test.mapper" />
+	</bean>
+
+	<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	<bean id="dataSourceAspect" class="com.johnny.test.aspect.DataSourceAspect" />
+	<aop:config>
+		<aop:aspect id="dataAspect" ref="dataSourceAspect" order="1">
+			<aop:pointcut id="aspectPoint"
+				expression="execution(* com.johnny.test.service.*.*(..))" />
+			<aop:before pointcut-ref="aspectPoint" method="before" />
+		</aop:aspect>
+	</aop:config>
+</beans>

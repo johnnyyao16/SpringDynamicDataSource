@@ -1,0 +1,11 @@
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.springframework.org/schema/beans"
+    xsi:schemaLocation="
+     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- NOTE: for JPA -->
+    <!-- <import resource="classpath:standard-code-db-jpa.spring.xml"/> -->
+    <!-- NOTE: for MyBatis -->
+    <import resource="classpath:spring.db-mybatis.xml"/>
+
+</beans>
