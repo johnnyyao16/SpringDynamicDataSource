@@ -22,7 +22,7 @@ public class UserServiceImpl implements UserService {
         return userMapper.selectUser(userId);
     }
     
-    @DataSource("slave")
+    @DataSource("master")
     public void saveUser(User user) {
         // TODO Auto-generated method stub
         userMapper.insertUser(user);
